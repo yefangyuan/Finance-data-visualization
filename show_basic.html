@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<head>
+<!--
+<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+  <meta content="utf-8" http-equiv="encoding">
+-->
+  <meta charset="utf-8">
+  <title> show_01 </title>
+</head>
+
+<h1>show_01</h1>
+
+<link rel="stylesheet" type="text/css" href="css/d3.parcoords.css">
+<!--<link rel="stylesheet" type="text/css" href="style.css">-->
+
+<script src="js/d3.js"></script>
+<script src="js/d3.svg.multibrush.js"></script>
+<script src="js/d3.parcoords.js"></script>
+
+<p>Loads an external <a href="data/finance_data.csv"> csv file</a></p>
+
+<div id="example" class="parcoords" style="width:960px;height:300px;"></div>
+<!--定义面板的id和class -->
+<script>
+//定义比例尺，根据数值改变颜色
+var blue_to_brown = d3.scale.linear()
+  .domain([0, 10])
+  .range(["steelblue", "brown"])
+  .interpolate(d3.interpolateLab);
+  
+var color = function(d) { return blue_to_brown(d['流动比率']); };
+
+var parcoords = d3.parcoords()("#example")
+    .color(color)
+    .alpha(0.4);
+
+// load csv file and create the chart
+d3.csv('data/finance_data.csv', function(data) {
+  parcoords
+    .data(data)
+    .hideAxis(["公司名称"])
+    .composite("darker")
+    .render()
+    .shadows()
+    .reorderable()
+    .brushMode("1D-axes");  // enable brushing
+});
+
+</script>
+
+

@@ -1,0 +1,84 @@
+
+.parcoords > svg, .parcoords > canvas { 
+  font: 14px sans-serif;
+  position: absolute;
+}
+/*svg和canvas都是画布
+ * 位置设置为 absolute 的元素，位置可通过 "left"、"top"、"right" 以及 "bottom" 属性来规定。
+ * sans-serif是字体  */
+
+.parcoords > canvas {
+  pointer-events: none;
+}
+/*canvas上鼠标虚化，没鼠标放上去没效果*/
+	
+.parcoords text.label {
+  cursor: default;
+}
+/*cursor 属性规定所显示的指针（光标）的类型，default指默认的箭头型*/
+
+
+/*fill就是填充，而stroke是绘制边缘 */
+
+
+.parcoords rect.background {
+  fill: transparent;
+}
+/*rect的背景填充是透明的 */
+
+.parcoords rect.background:hover {
+  fill: rgba(120,120,120,0.2);
+}
+/*hover鼠标选择器,这里给rect的background加了个hover，当鼠标移到rect时的背景填充样子
+伪类
+:active 向被激活的元素添加样式。 1 
+:focus 向拥有键盘输入焦点的元素添加样式。 2 
+:hover 当鼠标悬浮在元素上方时，向元素添加样式。 1 
+:link 向未被访问的链接添加样式。 1 
+:visited 向已被访问的链接添加样式。 1 
+:first-child 向元素的第一个子元素添加样式。 2 
+:lang 向带有指定 lang 属性的元素添加样式。 2 
+*/
+
+.parcoords .resize rect {
+  fill: rgba(0,0,0,0.1);
+}
+/*本类中，parcoords.resize是一个类
+下面解释： 
+我们假设 class 为 important 的所有元素都是粗体，而 class 为 warning 的所有元素为斜体，class 中同时包含 important 和 warning 的所有元素还有一个银色的背景 。就可以写作：
+.important {font-weight:bold;}
+.warning {font-style:italic;}
+.important.warning {background:silver;}
+ */
+
+.parcoords rect.extent {
+  fill: rgba(255,255,255,0.25);
+  stroke: rgba(0,0,0,0.6);
+}
+.parcoords .axis line, .parcoords .axis path {
+  fill: none;
+  stroke: #222;
+  shape-rendering: crispEdges;
+}
+/*对于line和path的样式*/
+
+.parcoords canvas {
+  opacity: 1;
+  -moz-transition: opacity 0.3s;
+  -webkit-transition: opacity 0.3s;
+  -o-transition: opacity 0.3s;
+}
+
+.parcoords canvas.faded{
+  opacity: 0.25; 
+}
+/*faded 是js中定义的， opacity是不透明度 */
+.parcoords {
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+    background-color: white;
+}

@@ -1,0 +1,260 @@
+<!doctype html>
+<head>
+  <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+  <meta content="utf-8" http-equiv="encoding">
+</head>
+<!-- SlickGrid -->
+<link rel="stylesheet" href="js/slickgrid/slick.grid.css" type="text/css"/>
+<link rel="stylesheet" href="js/slickgrid/jquery-ui-1.8.16.custom.css" type="text/css"/>
+<link rel="stylesheet" href="js/slickgrid/examples.css" type="text/css"/>
+<link rel="stylesheet" href="js/slickgrid/slick.pager.css" type="text/css"/>
+
+
+
+<script src="js/slickgrid/jquery-1.7.min.js"></script>
+<!--负责面板-->
+
+<script src="js/slickgrid/jquery.event.drag-2.0.min.js"></script>
+<!--负责面板事件-->
+
+<script src="js/slickgrid/slick.core.js"></script>
+<script src="js/slickgrid/slick.grid.js"></script>
+<script src="js/slickgrid/slick.pager.js"></script>
+<script src="js/slickgrid/slick.dataview.js"></script>
+<!-- End SlickGrid -->
+
+<link rel="stylesheet" type="text/css" href="css/d3.parcoords.css">
+<link rel="stylesheet" type="text/css" href="style.css">
+<style>
+body, html {
+  margin: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  font-size: 12px;
+}
+#up{
+	width:1300px; 
+  height:auto;
+  margin:0 auto;}
+
+#up #example{
+	height:200px; 
+	width:950px; 
+	float:left;
+}
+#up #2bar{
+	height:200px; 
+	width:500px; 
+ 
+}
+
+#grid, #pager {
+  position: fixed;
+  width: 100%;
+}
+/*grid 面板，pager上一页下一按钮及显示选项*/
+
+#grid {
+  bottom: 0;
+  height: 300px;
+}
+#pager {
+  bottom: 306px;
+  height: 20px;
+}
+.slick-row:hover {
+  font-weight: bold;
+  color: #069;
+}
+</style>
+
+<script src="js/d3.js"></script>
+<script src="js/d3.min.js"></script>
+<script src="js/d3.parcoords.js"></script>
+<script src="js/divgrid.js"></script>
+
+<script src="js/d3.svg.multibrush.js"></script>
+
+<script src="js/sylvester.js"></script>
+<script src="js/underscore.js"></script>
+
+<script src="js/underscore.math.js"></script>
+
+<body>
+<div id="up">
+<div id="example" class="parcoords"></div>
+<!--折线图-->
+<div id="2bar">
+	<br/>
+	<br/>
+	<div>curve smoothness. value is <strong id="smooth">0.0</strong><br/>
+<input type="range" min="0" max="0.25" value="0.0" step="0.01" id="smoothness"/>
+<div>bundling strength. value is <strong id="strength">0</strong><br/>
+<input type="range" min="0" max="2" value="0" step="0.4" id="bundling"/>
+<div id="bundleDimension">Bundle using clusters determined by: </div>
+</div>
+</div>
+
+<div id="grid"></div>
+<!--翻页及选项按钮-->
+<div id="pager"></div>
+<!--显示面板-->
+<script id="brushing">
+
+var blue_to_brown = d3.scale.linear()
+  .domain([0, 10])
+  .range(["steelblue", "brown"])
+  .interpolate(d3.interpolateLab);
+  
+var color = function(d) { return blue_to_brown(d['流动比率']); };
+
+var parcoords = d3.parcoords()("#example")
+    .color(color)
+    .alpha(0.4)
+    //.mode("queue") // 显出变换过程
+    .height(d3.max([document.body.clientHeight-326, 220]))
+    .margin({
+      top: 36,
+      left: 0,
+      right: 0,
+      bottom: 16
+    });
+    
+// load csv file and create the chart
+d3.csv('data/finance_data.csv', function(data) {
+  // slickgrid needs each data element to have an id
+  data.forEach(function(d,i) { d.id = d.id || i; });
+
+  parcoords
+    .data(data)
+    .bundlingStrength(0) // set bundling strength
+	  .smoothness(0)
+	  .bundleDimension("流动比率")
+	  .showControlPoints(false)
+	  .hideAxis(["公司名称"])
+    .composite("darker")
+ 	  .render()
+	  .shadows()
+	  .brushMode("1D-axes")
+	  .reorderable()
+	  .interactive();
+	  
+	  // smoothness
+	d3.select("#smoothness").on("change", function() {
+		d3.select("#smooth").text(this.value);
+		parcoords.smoothness(this.value).render();
+	});
+	// bundling strength slider
+	d3.select("#bundling").on("change", function() {
+		d3.select("#strength").text(this.value);
+		parcoords.bundlingStrength(this.value).render();
+	});
+	
+	function changeBundle() {
+		parcoords.bundleDimension(this.value);
+	}
+	var select = d3.select("#bundleDimension").append("select").on("change", changeBundle);
+
+var optionss = select.selectAll('option')
+		.data(d3.keys(parcoords.dimensions()));
+	
+	optionss
+		.enter()
+		.append("option")
+		.attr("value", function(d) {return d;})
+		.text(function(d) {return d;});
+		
+		
+		
+		
+  // setting up grid
+  var column_keys = d3.keys(data[0]);
+  var columns = column_keys.map(function(key,i) {
+    return {
+      id: key,
+      name: key,
+      field: key,
+      sortable: true
+    }
+  });
+
+  var options = {
+    enableCellNavigation: true,
+    enableColumnReorder: false,
+    multiColumnSort: false
+  };
+
+  var dataView = new Slick.Data.DataView();
+  var grid = new Slick.Grid("#grid", dataView, columns, options);
+  var pager = new Slick.Controls.Pager(dataView, grid, $("#pager"));
+
+  // wire up model events to drive the grid
+  dataView.onRowCountChanged.subscribe(function (e, args) {
+    grid.updateRowCount();
+    grid.render();
+  });
+
+  dataView.onRowsChanged.subscribe(function (e, args) {
+    grid.invalidateRows(args.rows);
+    grid.render();
+  });
+
+  // column sorting
+  var sortcol = column_keys[0];
+  var sortdir = 1;
+
+  function comparer(a, b) {
+    var x = a[sortcol], y = b[sortcol];
+    return (x == y ? 0 : (x > y ? 1 : -1));
+  }
+  
+  // click header to sort grid column
+  grid.onSort.subscribe(function (e, args) {
+    sortdir = args.sortAsc ? 1 : -1;
+    sortcol = args.sortCol.field;
+
+    if ($.browser.msie && $.browser.version <= 8) {
+      dataView.fastSort(sortcol, args.sortAsc);
+    } else {
+      dataView.sort(comparer, args.sortAsc);
+    }
+  });
+
+  // highlight row in chart
+  grid.onMouseEnter.subscribe(function(e,args) {
+    // Get row number from grid
+    var grid_row = grid.getCellFromEvent(e).row;
+
+    // Get the id of the item referenced in grid_row
+    var item_id = grid.getDataItem(grid_row).id;
+    var d = parcoords.brushed() || data;
+
+    // Get the element position of the id in the data object
+    elementPos = d.map(function(x) {return x.id; }).indexOf(item_id);
+
+    // Highlight that element in the parallel coordinates graph
+    parcoords.highlight([d[elementPos]]);
+  });
+
+  grid.onMouseLeave.subscribe(function(e,args) {
+    parcoords.unhighlight();
+  });
+
+  // fill grid with data
+  gridUpdate(data);
+
+  // update grid on brush
+  parcoords.on("brush", function(d) {
+    gridUpdate(d);
+  });
+
+  function gridUpdate(data) {
+    dataView.beginUpdate();
+    dataView.setItems(data);
+    dataView.endUpdate();
+  };
+
+});
+</script>
+</body>
